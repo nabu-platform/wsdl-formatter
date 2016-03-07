@@ -1,5 +1,6 @@
 package be.nabu.libs.wsdl.formatter;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.w3c.dom.Element;
 
 import be.nabu.libs.wsdl.api.Binding;
 import be.nabu.libs.wsdl.api.BindingOperation;
+import be.nabu.libs.wsdl.api.Fragment;
 import be.nabu.libs.wsdl.api.Message;
 import be.nabu.libs.wsdl.api.MessagePart;
 import be.nabu.libs.wsdl.api.Operation;
@@ -25,7 +27,9 @@ public class WSDLFormatter {
 	
 	public static final String NAMESPACE = "http://schemas.xmlsoap.org/wsdl/";
 	public static final String SOAP_HTTP_NAMESPACE = "http://schemas.xmlsoap.org/soap/http";
-	public static final String SOAP_NAMESPACE = "http://schemas.xmlsoap.org/wsdl/soap/";
+	public static final String SOAP_NAMESPACE_11 = "http://schemas.xmlsoap.org/wsdl/soap/";
+	public static final String SOAP_NAMESPACE_12 = "http://schemas.xmlsoap.org/wsdl/soap12/";
+	public static final List<String> SOAP_NAMESPACES = Arrays.asList(SOAP_NAMESPACE_11, SOAP_NAMESPACE_12);
 	
 	/**
 	 * Contains the namespace > prefix mapping based on the imports
@@ -39,7 +43,7 @@ public class WSDLFormatter {
 		document.appendChild(definitions);
 		definitions.setAttribute("xmlns:wsdl", NAMESPACE);
 		definitions.setAttribute("xmlns:tns", definition.getTargetNamespace());
-		definitions.setAttribute("xmlns:soap", SOAP_NAMESPACE);
+		definitions.setAttribute("xmlns:soap", definition.getSoapVersion() != null && definition.getSoapVersion() == 1.2 ? SOAP_NAMESPACE_12 : SOAP_NAMESPACE_11);
 		definitions.setAttribute("targetNamespace", definition.getTargetNamespace());
 		namespaces.put(definition.getTargetNamespace(), "tns");
 		formatImports(definitions, definition.getImports());
@@ -139,12 +143,13 @@ public class WSDLFormatter {
 	private void formatBindings(Element parent, List<Binding> bindings) {
 		if (bindings != null) {
 			for (Binding binding : bindings) {
+				String soapNamespace = getSoapNamespace(binding);
 				Element element = parent.getOwnerDocument().createElementNS(NAMESPACE, "wsdl:binding");
 				element.setAttribute("name", binding.getName());
 				element.setAttribute("type", getPrefix(binding.getPortType().getDefinition().getTargetNamespace()) + binding.getPortType().getName());
 				Element childBinding;
-				if (SOAP_NAMESPACE.equals(binding.getTransport().getNamespace())) {
-					childBinding = parent.getOwnerDocument().createElementNS(SOAP_NAMESPACE, "soap:binding");
+				if (SOAP_NAMESPACES.contains(binding.getTransport().getNamespace())) {
+					childBinding = parent.getOwnerDocument().createElementNS(soapNamespace, "soap:binding");
 				}
 				else {
 					childBinding = parent.getOwnerDocument().createElementNS(binding.getTransport().getNamespace(), "transport:binding");
@@ -159,12 +164,17 @@ public class WSDLFormatter {
 		}
 	}
 	
+	private String getSoapNamespace(Fragment fragment) {
+		return fragment.getDefinition().getSoapVersion() != null && fragment.getDefinition().getSoapVersion() == 1.2 ? SOAP_NAMESPACE_12 : SOAP_NAMESPACE_11;
+	}
+	
 	private void formatBindingOperations(Element parent, List<BindingOperation> operations) {
 		if (operations != null) {
 			for (BindingOperation operation : operations) {
+				String soapNamespace = getSoapNamespace(operation);
 				Element element = parent.getOwnerDocument().createElementNS(NAMESPACE, "wsdl:operation");
 				element.setAttribute("name", operation.getName());
-				Element childBinding = parent.getOwnerDocument().createElementNS(SOAP_NAMESPACE, "soap:operation");
+				Element childBinding = parent.getOwnerDocument().createElementNS(soapNamespace, "soap:operation");
 				if (operation.getSoapAction() != null) {
 					childBinding.setAttribute("soapAction", operation.getSoapAction());
 				}
@@ -175,7 +185,7 @@ public class WSDLFormatter {
 				if (operation.getOperation().getInput() != null) {
 					Element inputElement = parent.getOwnerDocument().createElementNS(NAMESPACE, "wsdl:input");
 					inputElement.setAttribute("name", operation.getOperation().getInput().getName());
-					Element body = parent.getOwnerDocument().createElementNS(SOAP_NAMESPACE, "soap:body");
+					Element body = parent.getOwnerDocument().createElementNS(soapNamespace, "soap:body");
 					if (operation.getUse() != null) {
 						body.setAttribute("use", operation.getUse().toString().toLowerCase());
 					}
@@ -185,7 +195,7 @@ public class WSDLFormatter {
 				if (operation.getOperation().getOutput() != null) {
 					Element outputElement = parent.getOwnerDocument().createElementNS(NAMESPACE, "wsdl:output");
 					outputElement.setAttribute("name", operation.getOperation().getOutput().getName());
-					Element body = parent.getOwnerDocument().createElementNS(SOAP_NAMESPACE, "soap:body");
+					Element body = parent.getOwnerDocument().createElementNS(soapNamespace, "soap:body");
 					if (operation.getUse() != null) {
 						body.setAttribute("use", operation.getUse().toString().toLowerCase());
 					}
@@ -196,7 +206,7 @@ public class WSDLFormatter {
 					for (Message fault : operation.getOperation().getFaults()) {
 						Element faultElement = parent.getOwnerDocument().createElementNS(NAMESPACE, "wsdl:fault");
 						faultElement.setAttribute("name", fault.getName());
-						Element body = parent.getOwnerDocument().createElementNS(SOAP_NAMESPACE, "soap:body");
+						Element body = parent.getOwnerDocument().createElementNS(soapNamespace, "soap:body");
 						if (operation.getUse() != null) {
 							body.setAttribute("use", operation.getUse().toString().toLowerCase());
 						}
@@ -223,11 +233,12 @@ public class WSDLFormatter {
 	private void formatPorts(Element parent, List<ServicePort> ports) {
 		if (ports != null) {
 			for (ServicePort port : ports) {
+				String soapNamespace = getSoapNamespace(port);
 				Element element = parent.getOwnerDocument().createElementNS(NAMESPACE, "wsdl:port");
 				element.setAttribute("name", port.getName());
 				element.setAttribute("binding", getPrefix(port.getBinding().getDefinition().getTargetNamespace()) + port.getBinding().getName());
 				if (port.getEndpoint() != null) {
-					Element address = parent.getOwnerDocument().createElementNS(SOAP_NAMESPACE, "soap:address");
+					Element address = parent.getOwnerDocument().createElementNS(soapNamespace, "soap:address");
 					address.setAttribute("location", port.getEndpoint());
 					element.appendChild(address);
 				}
