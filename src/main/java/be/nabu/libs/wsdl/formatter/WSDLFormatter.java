@@ -31,6 +31,8 @@ public class WSDLFormatter {
 	public static final String SOAP_NAMESPACE_12 = "http://schemas.xmlsoap.org/wsdl/soap12/";
 	public static final List<String> SOAP_NAMESPACES = Arrays.asList(SOAP_NAMESPACE_11, SOAP_NAMESPACE_12);
 	
+	private boolean elementQualified, attributeQualified;
+	
 	/**
 	 * Contains the namespace > prefix mapping based on the imports
 	 */
@@ -48,6 +50,8 @@ public class WSDLFormatter {
 		namespaces.put(definition.getTargetNamespace(), "tns");
 		formatImports(definitions, definition.getImports());
 		TypeRegistryFormatter typeFormatter = new TypeRegistryFormatter();
+		typeFormatter.setAttributeQualified(attributeQualified);
+		typeFormatter.setElementQualified(elementQualified);
 		List<Document> typeDocuments = typeFormatter.format(definition.getRegistry());
 		Element types = document.createElementNS(NAMESPACE, "wsdl:types");
 		definitions.appendChild(types);
@@ -255,4 +259,20 @@ public class WSDLFormatter {
 		}
 		return namespaces.get(namespace) == null ? "" : namespaces.get(namespace) + ":";
 	}
+
+	public boolean isElementQualified() {
+		return elementQualified;
+	}
+	public void setElementQualified(boolean elementQualified) {
+		this.elementQualified = elementQualified;
+	}
+
+	public boolean isAttributeQualified() {
+		return attributeQualified;
+	}
+	public void setAttributeQualified(boolean attributeQualified) {
+		this.attributeQualified = attributeQualified;
+	}
+	
+	
 }

@@ -13,9 +13,13 @@ import be.nabu.libs.types.definition.xsd.XSDDefinitionMarshaller;
 
 public class TypeRegistryFormatter {
 	
+	private boolean elementQualified, attributeQualified;
+	
 	public List<Document> format(TypeRegistry registry) {
 		List<Document> documents = new ArrayList<Document>();
 		XSDDefinitionMarshaller marshaller = new XSDDefinitionMarshaller();
+		marshaller.setIsElementQualified(elementQualified);
+		marshaller.setIsAttributeQualified(attributeQualified);
 		for (String namespace : registry.getNamespaces()) {
 			for (Element<?> element : registry.getElements(namespace)) {
 				marshaller.define(element);
@@ -27,8 +31,24 @@ public class TypeRegistryFormatter {
 				marshaller.define(complexType);
 			}
 		}
-		documents.add(marshaller.getSchema());
+		if (marshaller.getSchema() != null) {
+			documents.add(marshaller.getSchema());
+		}
 		documents.addAll(marshaller.getAttachments().values());
 		return documents;
+	}
+
+	public boolean isElementQualified() {
+		return elementQualified;
+	}
+	public void setElementQualified(boolean elementQualified) {
+		this.elementQualified = elementQualified;
+	}
+
+	public boolean isAttributeQualified() {
+		return attributeQualified;
+	}
+	public void setAttributeQualified(boolean attributeQualified) {
+		this.attributeQualified = attributeQualified;
 	}
 }
