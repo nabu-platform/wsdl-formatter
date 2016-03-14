@@ -18,6 +18,7 @@ public class TypeRegistryFormatter {
 	public List<Document> format(TypeRegistry registry) {
 		List<Document> documents = new ArrayList<Document>();
 		XSDDefinitionMarshaller marshaller = new XSDDefinitionMarshaller();
+		marshaller.setIncludeSchemaLocation(false);
 		marshaller.setIsElementQualified(elementQualified);
 		marshaller.setIsAttributeQualified(attributeQualified);
 		for (String namespace : registry.getNamespaces()) {
