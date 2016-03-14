@@ -70,7 +70,7 @@ public class WSDLFormatter {
 			for (WSDLDefinition imported : imports) {
 				Element element = parent.getOwnerDocument().createElementNS(NAMESPACE, "wsdl:import");
 				element.setAttribute("namespace", imported.getTargetNamespace());
-				element.setAttribute("location", "attachments:/" + imported.getTargetNamespace());
+//				element.setAttribute("location", "attachments:/" + imported.getTargetNamespace());
 				parent.appendChild(element);
 			}
 		}
