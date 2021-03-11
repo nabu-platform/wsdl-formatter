@@ -32,6 +32,7 @@ public class WSDLFormatter {
 	public static final List<String> SOAP_NAMESPACES = Arrays.asList(SOAP_NAMESPACE_11, SOAP_NAMESPACE_12);
 	
 	private boolean elementQualified, attributeQualified;
+	private boolean hidePrivatelyScoped;
 	
 	/**
 	 * Contains the namespace > prefix mapping based on the imports
@@ -52,6 +53,7 @@ public class WSDLFormatter {
 		TypeRegistryFormatter typeFormatter = new TypeRegistryFormatter();
 		typeFormatter.setAttributeQualified(attributeQualified);
 		typeFormatter.setElementQualified(elementQualified);
+		typeFormatter.setHidePrivatelyScoped(hidePrivatelyScoped);
 		List<Document> typeDocuments = typeFormatter.format(definition.getRegistry());
 		Element types = document.createElementNS(NAMESPACE, "wsdl:types");
 		definitions.appendChild(types);
@@ -273,6 +275,13 @@ public class WSDLFormatter {
 	public void setAttributeQualified(boolean attributeQualified) {
 		this.attributeQualified = attributeQualified;
 	}
-	
+
+	public boolean isHidePrivatelyScoped() {
+		return hidePrivatelyScoped;
+	}
+
+	public void setHidePrivatelyScoped(boolean hidePrivatelyScoped) {
+		this.hidePrivatelyScoped = hidePrivatelyScoped;
+	}
 	
 }

@@ -14,10 +14,12 @@ import be.nabu.libs.types.definition.xsd.XSDDefinitionMarshaller;
 public class TypeRegistryFormatter {
 	
 	private boolean elementQualified, attributeQualified;
+	private boolean hidePrivatelyScoped;
 	
 	public List<Document> format(TypeRegistry registry) {
 		List<Document> documents = new ArrayList<Document>();
 		XSDDefinitionMarshaller marshaller = new XSDDefinitionMarshaller();
+		marshaller.setHidePrivatelyScoped(hidePrivatelyScoped);
 		marshaller.setIncludeSchemaLocation(false);
 		marshaller.setIsElementQualified(elementQualified);
 		marshaller.setIsAttributeQualified(attributeQualified);
@@ -51,5 +53,13 @@ public class TypeRegistryFormatter {
 	}
 	public void setAttributeQualified(boolean attributeQualified) {
 		this.attributeQualified = attributeQualified;
+	}
+
+	public boolean isHidePrivatelyScoped() {
+		return hidePrivatelyScoped;
+	}
+
+	public void setHidePrivatelyScoped(boolean hidePrivatelyScoped) {
+		this.hidePrivatelyScoped = hidePrivatelyScoped;
 	}
 }
